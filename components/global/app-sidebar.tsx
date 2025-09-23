@@ -27,6 +27,12 @@ const navItems = [
 
 const dataStructures = [
   {
+    name: "Array",
+    url: "/visualizer/array",
+    icon: SquareStack,
+    description: "Linear data structure with contiguous memory and index-based access",
+  },
+  {
     name: "Stack",
     url: "/visualizer/stack",
     icon: SquareStack,

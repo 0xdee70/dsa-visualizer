@@ -5,6 +5,12 @@ import Link from "next/link"
 const sections = {
   dataStructures: [
     {
+      name: "Array",
+      description: "Linear data structure with contiguous memory allocation and constant-time index access.",
+      href: "/visualizer/array",
+      icon: Box,
+    },
+    {
       name: "Linked List",
       description: "Dynamic data structure with nodes connected through references. Explore different types of linked lists.",
       href: "/visualizer/linked-list",

@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { StringDisplay } from "./string-display"
 import { StringControls } from "./string-controls"
 import { StringOperations } from "./string-operations"
+import { TextAnalysis } from "./text-analysis"
 import { useString } from "@/hooks/use-string"
 
 interface StringVisualizerProps {
@@ -31,6 +32,11 @@ export function StringVisualizer({ content }: StringVisualizerProps) {
     clear,
     isEmpty,
     length,
+    getWordCount,
+    getCharacterFrequency,
+    getWordFrequency,
+    countOccurrences,
+    findAllOccurrences,
   } = useString()
 
   return (
@@ -63,6 +69,11 @@ export function StringVisualizer({ content }: StringVisualizerProps) {
                 isEmpty={isEmpty}
                 length={length}
                 currentText={text}
+                getWordCount={getWordCount}
+                getCharacterFrequency={getCharacterFrequency}
+                getWordFrequency={getWordFrequency}
+                onCountOccurrences={countOccurrences}
+                onFindAllOccurrences={findAllOccurrences}
               />
               <StringOperations operations={operations} />
             </div>
@@ -79,113 +90,14 @@ export function StringVisualizer({ content }: StringVisualizerProps) {
         </TabsContent>
         
         <TabsContent value="analysis">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-6">
-              <div className="p-6 border rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">String Complexity Analysis</h3>
-                <div className="space-y-3 text-sm">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="font-medium">Operation</div>
-                    <div className="font-medium">Time Complexity</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>Access character</div>
-                    <div className="font-mono">O(1)</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>Concatenation</div>
-                    <div className="font-mono">O(n + m)</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>Substring</div>
-                    <div className="font-mono">O(k)</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>Insert/Delete</div>
-                    <div className="font-mono">O(n)</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>Search (Naive)</div>
-                    <div className="font-mono">O(n × m)</div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>Replace</div>
-                    <div className="font-mono">O(n × m)</div>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="p-6 border rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">Current String Stats</h3>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span>Length:</span>
-                    <span className="font-mono">{length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Empty:</span>
-                    <span className="font-mono">{isEmpty ? 'Yes' : 'No'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Memory (approx):</span>
-                    <span className="font-mono">{length * 2} bytes</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Operations:</span>
-                    <span className="font-mono">{operations.length}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="space-y-6">
-              <div className="p-6 border rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">Character Analysis</h3>
-                <div className="space-y-3 text-sm">
-                  {length > 0 ? (
-                    <>
-                      <div className="flex justify-between">
-                        <span>Alphabetic:</span>
-                        <span className="font-mono">
-                          {text.split('').filter(c => /[a-zA-Z]/.test(c)).length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Numeric:</span>
-                        <span className="font-mono">
-                          {text.split('').filter(c => /[0-9]/.test(c)).length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Whitespace:</span>
-                        <span className="font-mono">
-                          {text.split('').filter(c => /\s/.test(c)).length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Special chars:</span>
-                        <span className="font-mono">
-                          {text.split('').filter(c => !/[a-zA-Z0-9\s]/.test(c)).length}
-                        </span>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="text-muted-foreground">String is empty</div>
-                  )}
-                </div>
-              </div>
-              
-              <div className="p-6 border rounded-lg">
-                <h3 className="text-lg font-semibold mb-4">Performance Tips</h3>
-                <div className="space-y-2 text-sm text-muted-foreground">
-                  <div>• Use StringBuilder for multiple concatenations</div>
-                  <div>• Consider KMP algorithm for repeated pattern searches</div>
-                  <div>• String immutability means each modification creates a new string</div>
-                  <div>• Index-based operations are generally O(1) for access</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <TextAnalysis
+            text={text}
+            getWordCount={getWordCount}
+            getCharacterFrequency={getCharacterFrequency}
+            getWordFrequency={getWordFrequency}
+            countOccurrences={countOccurrences}
+            findAllOccurrences={findAllOccurrences}
+          />
         </TabsContent>
         
         <TabsContent value="theory">

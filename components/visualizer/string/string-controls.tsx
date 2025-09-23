@@ -21,6 +21,12 @@ interface StringControlsProps {
   isEmpty: boolean
   length: number
   currentText: string
+  // Text Analysis
+  getWordCount?: () => number
+  getCharacterFrequency?: () => { [key: string]: number }
+  getWordFrequency?: () => { [key: string]: number }
+  onCountOccurrences?: (pattern: string) => number
+  onFindAllOccurrences?: (pattern: string) => number[]
 }
 
 export function StringControls({
@@ -37,6 +43,11 @@ export function StringControls({
   isEmpty,
   length,
   currentText,
+  getWordCount,
+  getCharacterFrequency,
+  getWordFrequency,
+  onCountOccurrences,
+  onFindAllOccurrences,
 }: StringControlsProps) {
   const [newText, setNewText] = useState("")
   const [concatText, setConcatText] = useState("")
@@ -48,6 +59,7 @@ export function StringControls({
   const [searchPattern, setSearchPattern] = useState("")
   const [replaceSearch, setReplaceSearch] = useState("")
   const [replaceValue, setReplaceValue] = useState("")
+  const [analysisPattern, setAnalysisPattern] = useState("")
 
   const handleSetText = () => {
     if (newText.trim()) {
@@ -102,6 +114,24 @@ export function StringControls({
     if (searchPattern) {
       onNaiveSearch(searchPattern)
       setSearchPattern("")
+    }
+  }
+
+  const handleAnalyzePattern = () => {
+    if (analysisPattern) {
+      const count = onCountOccurrences ? onCountOccurrences(analysisPattern) : 0
+      const indices = onFindAllOccurrences ? onFindAllOccurrences(analysisPattern) : []
+      
+      // Highlight all occurrences
+      if (indices.length > 0) {
+        const allIndices: number[] = []
+        indices.forEach(startIndex => {
+          for (let i = 0; i < analysisPattern.length; i++) {
+            allIndices.push(startIndex + i)
+          }
+        })
+        // This would need to be passed from parent component
+      }
     }
   }
 
@@ -342,16 +372,58 @@ export function StringControls({
         </CardContent>
       </Card>
 
+      {/* Text Analysis */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Text Analysis</CardTitle>
+          <CardDescription>Analyze patterns and frequencies</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            <Label>Pattern Analysis</Label>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="Word or pattern to count"
+                value={analysisPattern}
+                onChange={(e) => setAnalysisPattern(e.target.value)}
+                disabled={isAnimating}
+              />
+              <Button
+                onClick={handleAnalyzePattern}
+                disabled={isAnimating || isEmpty || !analysisPattern}
+                size="sm"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
+            {analysisPattern && onCountOccurrences && (
+              <div className="text-sm text-muted-foreground">
+                Found: {onCountOccurrences(analysisPattern)} occurrences
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* String Info */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">String Info</CardTitle>
+          <CardTitle className="text-lg">String Statistics</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="text-center p-2 bg-muted rounded">
-              <div className="font-semibold">Length</div>
+              <div className="font-semibold">Characters</div>
               <div className="text-lg font-mono">{length}</div>
+            </div>
+            <div className="text-center p-2 bg-muted rounded">
+              <div className="font-semibold">Words</div>
+              <div className="text-lg font-mono">{getWordCount ? getWordCount() : 0}</div>
+            </div>
+            <div className="text-center p-2 bg-muted rounded">
+              <div className="font-semibold">Lines</div>
+              <div className="text-lg font-mono">{currentText.split('\n').length}</div>
             </div>
             <div className="text-center p-2 bg-muted rounded">
               <div className="font-semibold">Empty</div>

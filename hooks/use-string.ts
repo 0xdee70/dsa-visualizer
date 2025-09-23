@@ -179,6 +179,54 @@ export function useString(initialText: string = "") {
     characterIdCounter = 0
   }, [])
 
+  // Text Analysis Functions
+  const getWordCount = useCallback(() => {
+    if (!text.trim()) return 0
+    return text.trim().split(/\s+/).length
+  }, [text])
+
+  const getCharacterFrequency = useCallback(() => {
+    const frequency: { [key: string]: number } = {}
+    for (const char of text.toLowerCase()) {
+      if (char.match(/[a-z]/)) {
+        frequency[char] = (frequency[char] || 0) + 1
+      }
+    }
+    return frequency
+  }, [text])
+
+  const getWordFrequency = useCallback(() => {
+    if (!text.trim()) return {}
+    const words = text.toLowerCase().match(/\b\w+\b/g) || []
+    const frequency: { [key: string]: number } = {}
+    for (const word of words) {
+      frequency[word] = (frequency[word] || 0) + 1
+    }
+    return frequency
+  }, [text])
+
+  const countOccurrences = useCallback((pattern: string) => {
+    if (!pattern) return 0
+    const regex = new RegExp(pattern.toLowerCase(), 'g')
+    const matches = text.toLowerCase().match(regex)
+    return matches ? matches.length : 0
+  }, [text])
+
+  const findAllOccurrences = useCallback((pattern: string) => {
+    if (!pattern) return []
+    const indices: number[] = []
+    const lowerText = text.toLowerCase()
+    const lowerPattern = pattern.toLowerCase()
+    let index = lowerText.indexOf(lowerPattern)
+    
+    while (index !== -1) {
+      indices.push(index)
+      index = lowerText.indexOf(lowerPattern, index + 1)
+    }
+    
+    return indices
+  }, [text])
+
   return {
     text,
     characters,
@@ -198,5 +246,11 @@ export function useString(initialText: string = "") {
     clear,
     isEmpty: text.length === 0,
     length: text.length,
+    // Text Analysis
+    getWordCount,
+    getCharacterFrequency,
+    getWordFrequency,
+    countOccurrences,
+    findAllOccurrences,
   }
 }

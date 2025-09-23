@@ -21,8 +21,8 @@ export function ArrayDisplay({
   highlightedIndex, 
   accessedIndex,
   searchingIndex,
-  sortingIndices,
-  comparingIndices,
+  sortingIndices = [],
+  comparingIndices = [],
   searchResult
 }: ArrayDisplayProps) {
   // Create empty slots to show full capacity
@@ -45,7 +45,7 @@ export function ArrayDisplay({
         <div className="flex flex-wrap gap-2 justify-center">
           {slots.map(({ index, element }) => (
             <motion.div
-              key={`slot-${index}`}
+              key={`array-slot-${index}`}
               className="relative"
               layout
               transition={{ duration: 0.3 }}
@@ -94,7 +94,7 @@ export function ArrayDisplay({
                 <AnimatePresence mode="wait">
                   {element && (
                     <motion.span
-                      key={element.id}
+                      key={`element-${element.id}-${index}`}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
@@ -110,6 +110,7 @@ export function ArrayDisplay({
               <AnimatePresence>
                 {highlightedIndex === index && (
                   <motion.div
+                    key={`highlight-${index}`}
                     className="absolute -top-8 left-1/2 transform -translate-x-1/2 
                                bg-yellow-500 text-black text-xs px-2 py-1 rounded"
                     initial={{ opacity: 0, y: 10 }}
@@ -122,6 +123,7 @@ export function ArrayDisplay({
                 )}
                 {accessedIndex === index && (
                   <motion.div
+                    key={`access-${index}`}
                     className="absolute -top-8 left-1/2 transform -translate-x-1/2 
                                bg-green-500 text-white text-xs px-2 py-1 rounded"
                     initial={{ opacity: 0, y: 10 }}
@@ -134,6 +136,7 @@ export function ArrayDisplay({
                 )}
                 {searchingIndex === index && (
                   <motion.div
+                    key={`search-${index}`}
                     className="absolute -top-8 left-1/2 transform -translate-x-1/2 
                                bg-orange-500 text-white text-xs px-2 py-1 rounded"
                     initial={{ opacity: 0, y: 10 }}
@@ -146,6 +149,7 @@ export function ArrayDisplay({
                 )}
                 {sortingIndices.includes(index) && (
                   <motion.div
+                    key={`sort-${index}`}
                     className="absolute -top-8 left-1/2 transform -translate-x-1/2 
                                bg-purple-500 text-white text-xs px-2 py-1 rounded"
                     initial={{ opacity: 0, y: 10 }}
@@ -158,6 +162,7 @@ export function ArrayDisplay({
                 )}
                 {comparingIndices.includes(index) && (
                   <motion.div
+                    key={`compare-${index}`}
                     className="absolute -top-8 left-1/2 transform -translate-x-1/2 
                                bg-red-500 text-white text-xs px-2 py-1 rounded"
                     initial={{ opacity: 0, y: 10 }}
@@ -177,6 +182,7 @@ export function ArrayDisplay({
         <AnimatePresence>
           {searchResult && (
             <motion.div
+              key="search-result"
               className={`p-4 rounded-lg border ${
                 searchResult.found 
                   ? 'bg-green-500/10 border-green-500 text-green-400' 

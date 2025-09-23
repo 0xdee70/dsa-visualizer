@@ -1,9 +1,15 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BrainCircuit, Binary, TreePine, Box, List, ArrowLeftRight, Calculator, MessageSquare, Hash, ArrowRightLeft } from "lucide-react"
+import { BrainCircuit, Binary, TreePine, Box, List, ArrowLeftRight, Calculator, MessageSquare, Hash, ArrowRightLeft, Type } from "lucide-react"
 import Link from "next/link"
 
 const sections = {
   dataStructures: [
+    {
+      name: "String",
+      description: "Sequence of characters with operations like concatenation, substring, search, and pattern matching.",
+      href: "/visualizer/string",
+      icon: Type,
+    },
     {
       name: "Array",
       description: "Linear data structure with contiguous memory allocation and constant-time index access.",

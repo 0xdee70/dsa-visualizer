@@ -21,6 +21,10 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
     isAnimating,
     highlightedIndex,
     accessedIndex,
+    searchingIndex,
+    sortingIndices,
+    comparingIndices,
+    searchResult,
     insert,
     deleteAt,
     access,
@@ -29,6 +33,10 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
     clear,
     pushBack,
     popBack,
+    linearSearch,
+    binarySearch,
+    bubbleSort,
+    selectionSort,
     isFull,
     isEmpty,
   } = useArray()
@@ -61,6 +69,10 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
                 onClear={clear}
                 onPushBack={pushBack}
                 onPopBack={popBack}
+                onLinearSearch={linearSearch}
+                onBinarySearch={binarySearch}
+                onBubbleSort={bubbleSort}
+                onSelectionSort={selectionSort}
                 isAnimating={isAnimating}
                 isFull={isFull}
                 isEmpty={isEmpty}
@@ -75,6 +87,10 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
                 capacity={capacity}
                 highlightedIndex={highlightedIndex}
                 accessedIndex={accessedIndex}
+                searchingIndex={searchingIndex}
+                sortingIndices={sortingIndices}
+                comparingIndices={comparingIndices}
+                searchResult={searchResult}
               />
             </div>
           </div>

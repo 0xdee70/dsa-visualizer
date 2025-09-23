@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Plus, Minus, Search, Edit, RotateCcw, Trash2 } from "lucide-react"
+import { Plus, Minus, Search, Edit, RotateCcw, Trash2, ArrowUpDown, Zap } from "lucide-react"
 
 interface ArrayControlsProps {
   onInsert: (index: number, value: number) => void
@@ -17,6 +17,10 @@ interface ArrayControlsProps {
   onClear: () => void
   onPushBack: (value: number) => void
   onPopBack: () => void
+  onLinearSearch: (value: number) => void
+  onBinarySearch: (value: number) => void
+  onBubbleSort: () => void
+  onSelectionSort: () => void
   isAnimating: boolean
   isFull: boolean
   isEmpty: boolean
@@ -33,6 +37,10 @@ export function ArrayControls({
   onClear,
   onPushBack,
   onPopBack,
+  onLinearSearch,
+  onBinarySearch,
+  onBubbleSort,
+  onSelectionSort,
   isAnimating,
   isFull,
   isEmpty,
@@ -47,6 +55,7 @@ export function ArrayControls({
   const [newCapacity, setNewCapacity] = useState("")
   const [pushValue, setPushValue] = useState("")
   const [accessResult, setAccessResult] = useState<number | null>(null)
+  const [searchValue, setSearchValue] = useState("")
 
   const handleInsert = () => {
     const value = parseInt(insertValue)
@@ -98,6 +107,22 @@ export function ArrayControls({
     if (!isNaN(value)) {
       onPushBack(value)
       setPushValue("")
+    }
+  }
+
+  const handleLinearSearch = () => {
+    const value = parseInt(searchValue)
+    if (!isNaN(value)) {
+      onLinearSearch(value)
+      setSearchValue("")
+    }
+  }
+
+  const handleBinarySearch = () => {
+    const value = parseInt(searchValue)
+    if (!isNaN(value)) {
+      onBinarySearch(value)
+      setSearchValue("")
     }
   }
 
@@ -249,6 +274,87 @@ export function ArrayControls({
               <Edit className="h-4 w-4 mr-2" />
               Update
             </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Search Algorithms */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Search Algorithms</CardTitle>
+          <CardDescription>Find elements using different search methods</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="space-y-2">
+            <Label>Search Value</Label>
+            <Input
+              type="number"
+              placeholder="Enter value to search"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              disabled={isAnimating}
+            />
+          </div>
+          
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              onClick={handleLinearSearch}
+              disabled={isAnimating || isEmpty || !searchValue}
+              size="sm"
+              variant="outline"
+            >
+              <Search className="h-4 w-4 mr-2" />
+              Linear
+            </Button>
+            <Button
+              onClick={handleBinarySearch}
+              disabled={isAnimating || isEmpty || !searchValue}
+              size="sm"
+              variant="outline"
+            >
+              <Zap className="h-4 w-4 mr-2" />
+              Binary
+            </Button>
+          </div>
+          
+          <div className="text-xs text-muted-foreground">
+            <div>• Linear: O(n) - Works on any array</div>
+            <div>• Binary: O(log n) - Requires sorted array</div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Sorting Algorithms */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Sorting Algorithms</CardTitle>
+          <CardDescription>Sort the array using different algorithms</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              onClick={onBubbleSort}
+              disabled={isAnimating || isEmpty || size < 2}
+              size="sm"
+              variant="outline"
+            >
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              Bubble
+            </Button>
+            <Button
+              onClick={onSelectionSort}
+              disabled={isAnimating || isEmpty || size < 2}
+              size="sm"
+              variant="outline"
+            >
+              <ArrowUpDown className="h-4 w-4 mr-2" />
+              Selection
+            </Button>
+          </div>
+          
+          <div className="text-xs text-muted-foreground">
+            <div>• Bubble Sort: O(n²) - Simple comparison sorting</div>
+            <div>• Selection Sort: O(n²) - Find minimum repeatedly</div>
           </div>
         </CardContent>
       </Card>

@@ -22,6 +22,14 @@ function getOperationIcon(type: ArrayOperation['type']) {
       return '📏'
     case 'clear':
       return '🧹'
+    case 'search':
+      return '🔎'
+    case 'sort':
+      return '🔀'
+    case 'compare':
+      return '⚖️'
+    case 'swap':
+      return '🔄'
     default:
       return '⚡'
   }
@@ -41,6 +49,14 @@ function getOperationDescription(operation: ArrayOperation): string {
       return `Resized capacity to ${operation.newSize}`
     case 'clear':
       return 'Cleared all elements'
+    case 'search':
+      return `${operation.algorithm}: Searched for ${operation.searchValue}${operation.foundIndex !== -1 ? ` (found at index ${operation.foundIndex})` : ' (not found)'}`
+    case 'sort':
+      return `Started ${operation.algorithm} sorting algorithm`
+    case 'compare':
+      return `Compared elements at indices ${operation.compareIndices?.join(' and ')}`
+    case 'swap':
+      return `Swapped elements at indices ${operation.swapIndices?.join(' and ')}`
     default:
       return 'Unknown operation'
   }
@@ -60,6 +76,14 @@ function getOperationColor(type: ArrayOperation['type']): string {
       return 'text-purple-500'
     case 'clear':
       return 'text-gray-500'
+    case 'search':
+      return 'text-orange-500'
+    case 'sort':
+      return 'text-indigo-500'
+    case 'compare':
+      return 'text-pink-500'
+    case 'swap':
+      return 'text-cyan-500'
     default:
       return 'text-foreground'
   }

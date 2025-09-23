@@ -10,6 +10,10 @@ export function useArray(initialCapacity: number = 8) {
   const [isAnimating, setIsAnimating] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
   const [accessedIndex, setAccessedIndex] = useState<number | null>(null)
+  const [searchingIndex, setSearchingIndex] = useState<number | null>(null)
+  const [sortingIndices, setSortingIndices] = useState<number[]>([])
+  const [comparingIndices, setComparingIndices] = useState<number[]>([])
+  const [searchResult, setSearchResult] = useState<{ found: boolean; index: number; comparisons: number } | null>(null)
 
   const addOperation = useCallback((operation: Omit<ArrayOperation, 'timestamp'>) => {
     setOperations(prev => [...prev, { ...operation, timestamp: Date.now() }])
@@ -131,10 +135,195 @@ export function useArray(initialCapacity: number = 8) {
     setOperations([])
     setHighlightedIndex(null)
     setAccessedIndex(null)
+    setSearchingIndex(null)
+    setSortingIndices([])
+    setComparingIndices([])
+    setSearchResult(null)
     setIsAnimating(false)
     setCapacity(initialCapacity)
     elementIdCounter = 0
   }, [initialCapacity])
+
+  // Linear Search Implementation
+  const linearSearch = useCallback(async (searchValue: number) => {
+    if (elements.length === 0 || isAnimating) return
+
+    setIsAnimating(true)
+    addOperation({ type: 'search', searchValue, algorithm: 'Linear Search' })
+    
+    let comparisons = 0
+    let found = false
+    let foundIndex = -1
+
+    for (let i = 0; i < elements.length; i++) {
+      setSearchingIndex(i)
+      comparisons++
+      
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
+      if (elements[i].value === searchValue) {
+        found = true
+        foundIndex = i
+        setAccessedIndex(i)
+        break
+      }
+    }
+
+    addOperation({ 
+      type: 'search', 
+      searchValue, 
+      foundIndex: found ? foundIndex : -1, 
+      algorithm: 'Linear Search' 
+    })
+
+    setSearchResult({ found, index: foundIndex, comparisons })
+    
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    setSearchingIndex(null)
+    setAccessedIndex(null)
+    setIsAnimating(false)
+    
+    setTimeout(() => setSearchResult(null), 3000)
+  }, [elements, isAnimating, addOperation])
+
+  // Binary Search Implementation (requires sorted array)
+  const binarySearch = useCallback(async (searchValue: number) => {
+    if (elements.length === 0 || isAnimating) return
+
+    setIsAnimating(true)
+    addOperation({ type: 'search', searchValue, algorithm: 'Binary Search' })
+    
+    let left = 0
+    let right = elements.length - 1
+    let comparisons = 0
+    let found = false
+    let foundIndex = -1
+
+    while (left <= right) {
+      const mid = Math.floor((left + right) / 2)
+      setSearchingIndex(mid)
+      comparisons++
+      
+      await new Promise(resolve => setTimeout(resolve, 800))
+      
+      if (elements[mid].value === searchValue) {
+        found = true
+        foundIndex = mid
+        setAccessedIndex(mid)
+        break
+      } else if (elements[mid].value < searchValue) {
+        left = mid + 1
+      } else {
+        right = mid - 1
+      }
+    }
+
+    addOperation({ 
+      type: 'search', 
+      searchValue, 
+      foundIndex: found ? foundIndex : -1, 
+      algorithm: 'Binary Search' 
+    })
+
+    setSearchResult({ found, index: foundIndex, comparisons })
+    
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    setSearchingIndex(null)
+    setAccessedIndex(null)
+    setIsAnimating(false)
+    
+    setTimeout(() => setSearchResult(null), 3000)
+  }, [elements, isAnimating, addOperation])
+
+  // Bubble Sort Implementation
+  const bubbleSort = useCallback(async () => {
+    if (elements.length <= 1 || isAnimating) return
+
+    setIsAnimating(true)
+    addOperation({ type: 'sort', algorithm: 'Bubble Sort' })
+    
+    const arr = [...elements]
+    const n = arr.length
+
+    for (let i = 0; i < n - 1; i++) {
+      for (let j = 0; j < n - i - 1; j++) {
+        // Highlight comparison
+        setComparingIndices([j, j + 1])
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        if (arr[j].value > arr[j + 1].value) {
+          // Swap elements
+          [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]]
+          // Update indices
+          arr[j].index = j
+          arr[j + 1].index = j + 1
+          
+          setElements([...arr])
+          addOperation({ type: 'swap', swapIndices: [j, j + 1] })
+          
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+      }
+      // Mark element as sorted
+      setSortingIndices(prev => [...prev, n - 1 - i])
+    }
+    
+    setSortingIndices(prev => [...prev, 0]) // Mark first element as sorted
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    setComparingIndices([])
+    setSortingIndices([])
+    setIsAnimating(false)
+  }, [elements, isAnimating, addOperation])
+
+  // Selection Sort Implementation
+  const selectionSort = useCallback(async () => {
+    if (elements.length <= 1 || isAnimating) return
+
+    setIsAnimating(true)
+    addOperation({ type: 'sort', algorithm: 'Selection Sort' })
+    
+    const arr = [...elements]
+    const n = arr.length
+
+    for (let i = 0; i < n - 1; i++) {
+      let minIdx = i
+      setHighlightedIndex(i)
+      
+      for (let j = i + 1; j < n; j++) {
+        setComparingIndices([minIdx, j])
+        await new Promise(resolve => setTimeout(resolve, 400))
+        
+        if (arr[j].value < arr[minIdx].value) {
+          minIdx = j
+        }
+      }
+      
+      if (minIdx !== i) {
+        // Swap elements
+        [arr[i], arr[minIdx]] = [arr[minIdx], arr[i]]
+        arr[i].index = i
+        arr[minIdx].index = minIdx
+        
+        setElements([...arr])
+        addOperation({ type: 'swap', swapIndices: [i, minIdx] })
+        
+        await new Promise(resolve => setTimeout(resolve, 500))
+      }
+      
+      setSortingIndices(prev => [...prev, i])
+    }
+    
+    setSortingIndices(prev => [...prev, n - 1])
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    setHighlightedIndex(null)
+    setComparingIndices([])
+    setSortingIndices([])
+    setIsAnimating(false)
+  }, [elements, isAnimating, addOperation])
 
   const pushBack = useCallback(async (value: number) => {
     await insert(elements.length, value)
@@ -154,6 +343,10 @@ export function useArray(initialCapacity: number = 8) {
     isAnimating,
     highlightedIndex,
     accessedIndex,
+    searchingIndex,
+    sortingIndices,
+    comparingIndices,
+    searchResult,
     insert,
     deleteAt,
     access,
@@ -162,6 +355,10 @@ export function useArray(initialCapacity: number = 8) {
     clear,
     pushBack,
     popBack,
+    linearSearch,
+    binarySearch,
+    bubbleSort,
+    selectionSort,
     isFull: elements.length >= capacity,
     isEmpty: elements.length === 0,
   }

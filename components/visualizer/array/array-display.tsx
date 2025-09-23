@@ -9,13 +9,21 @@ interface ArrayDisplayProps {
   capacity: number
   highlightedIndex: number | null
   accessedIndex: number | null
+  searchingIndex: number | null
+  sortingIndices: number[]
+  comparingIndices: number[]
+  searchResult: { found: boolean; index: number; comparisons: number } | null
 }
 
 export function ArrayDisplay({ 
   elements, 
   capacity, 
   highlightedIndex, 
-  accessedIndex 
+  accessedIndex,
+  searchingIndex,
+  sortingIndices,
+  comparingIndices,
+  searchResult
 }: ArrayDisplayProps) {
   // Create empty slots to show full capacity
   const slots = Array.from({ length: capacity }, (_, index) => {
@@ -64,9 +72,22 @@ export function ArrayDisplay({
                     ? 'border-green-500 bg-green-500/20 ring-2 ring-green-500/50' 
                     : ''
                   }
+                  ${searchingIndex === index 
+                    ? 'border-orange-500 bg-orange-500/20 ring-2 ring-orange-500/50' 
+                    : ''
+                  }
+                  ${sortingIndices.includes(index) 
+                    ? 'border-purple-500 bg-purple-500/20 ring-2 ring-purple-500/50' 
+                    : ''
+                  }
+                  ${comparingIndices.includes(index) 
+                    ? 'border-red-500 bg-red-500/20 ring-2 ring-red-500/50' 
+                    : ''
+                  }
                 `}
                 animate={{
-                  scale: highlightedIndex === index || accessedIndex === index ? 1.1 : 1
+                  scale: highlightedIndex === index || accessedIndex === index || 
+                         searchingIndex === index || comparingIndices.includes(index) ? 1.1 : 1
                 }}
                 transition={{ duration: 0.3 }}
               >
@@ -108,13 +129,81 @@ export function ArrayDisplay({
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2 }}
                   >
-                    Accessed
+                    Found
+                  </motion.div>
+                )}
+                {searchingIndex === index && (
+                  <motion.div
+                    className="absolute -top-8 left-1/2 transform -translate-x-1/2 
+                               bg-orange-500 text-white text-xs px-2 py-1 rounded"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    Searching
+                  </motion.div>
+                )}
+                {sortingIndices.includes(index) && (
+                  <motion.div
+                    className="absolute -top-8 left-1/2 transform -translate-x-1/2 
+                               bg-purple-500 text-white text-xs px-2 py-1 rounded"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    Sorted
+                  </motion.div>
+                )}
+                {comparingIndices.includes(index) && (
+                  <motion.div
+                    className="absolute -top-8 left-1/2 transform -translate-x-1/2 
+                               bg-red-500 text-white text-xs px-2 py-1 rounded"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    Comparing
                   </motion.div>
                 )}
               </AnimatePresence>
             </motion.div>
           ))}
         </div>
+
+        {/* Search Result Display */}
+        <AnimatePresence>
+          {searchResult && (
+            <motion.div
+              className={`p-4 rounded-lg border ${
+                searchResult.found 
+                  ? 'bg-green-500/10 border-green-500 text-green-400' 
+                  : 'bg-red-500/10 border-red-500 text-red-400'
+              }`}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="text-center">
+                <div className="font-semibold mb-1">
+                  {searchResult.found ? '✅ Element Found!' : '❌ Element Not Found'}
+                </div>
+                <div className="text-sm">
+                  {searchResult.found 
+                    ? `Found at index ${searchResult.index}` 
+                    : 'Element does not exist in array'
+                  }
+                </div>
+                <div className="text-xs mt-1 opacity-75">
+                  Comparisons made: {searchResult.comparisons}
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Array Properties */}
         <div className="grid grid-cols-2 gap-4 text-sm">

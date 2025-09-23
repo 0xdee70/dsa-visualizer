@@ -1,6 +1,6 @@
 "use client"
 
-import { Binary, Home, Database, BrainCircuit, TreePine, List, SquareStack, SquareChevronLeft, Equal, MessageSquare, X, Hash, ArrowRightLeft } from "lucide-react"
+import { Binary, Home, Database, BrainCircuit, TreePine, List, SquareStack, SquareChevronLeft, Equal, MessageSquare, X, Hash, ArrowRightLeft, Type } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +31,12 @@ const dataStructures = [
     url: "/visualizer/array",
     icon: SquareStack,
     description: "Linear data structure with contiguous memory and index-based access",
+  },
+  {
+    name: "String",
+    url: "/visualizer/string",
+    icon: Type,
+    description: "Sequence of characters with text manipulation and pattern searching capabilities",
   },
   {
     name: "Stack",

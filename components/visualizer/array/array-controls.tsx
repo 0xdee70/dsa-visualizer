@@ -23,6 +23,7 @@ interface ArrayControlsProps {
   onBinarySearch: (value: number) => void
   onBubbleSort: () => void
   onSelectionSort: () => void
+  onLoadExample: (array: number[]) => void
   isAnimating: boolean
   isFull: boolean
   isEmpty: boolean
@@ -55,6 +56,7 @@ export function ArrayControls({
   onBinarySearch,
   onBubbleSort,
   onSelectionSort,
+  onLoadExample,
   isAnimating,
   isFull,
   isEmpty,
@@ -83,6 +85,7 @@ export function ArrayControls({
   const [accessByValueResult, setAccessByValueResult] = useState<{ found: boolean; index: number; comparisons: number } | null>(null)
   const [accessByValueInput, setAccessByValueInput] = useState("")
   const [searchValue, setSearchValue] = useState("")
+  const [manualInput, setManualInput] = useState("")
 
   const handleInsert = () => {
     const value = parseInt(insertValue)
@@ -162,8 +165,89 @@ export function ArrayControls({
     }
   }
 
+  const handleManualLoad = () => {
+    try {
+      const values = manualInput.split(',')
+        .map(val => parseInt(val.trim()))
+        .filter(val => !isNaN(val))
+      
+      if (values.length > 0) {
+        onLoadExample(values)
+        setManualInput("")
+      }
+    } catch (error) {
+      console.error('Invalid input format')
+    }
+  }
+
   return (
     <div className="space-y-4">
+      {/* Load Examples */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Load Examples</CardTitle>
+          <CardDescription>Start with predefined arrays or manual entry</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              onClick={() => onLoadExample([1, 2, 3, 4, 5])}
+              disabled={isAnimating}
+              size="sm"
+              variant="outline"
+            >
+              Sorted [1-5]
+            </Button>
+            <Button
+              onClick={() => onLoadExample([5, 2, 8, 1, 9, 3])}
+              disabled={isAnimating}
+              size="sm"
+              variant="outline"
+            >
+              Unsorted
+            </Button>
+            <Button
+              onClick={() => onLoadExample([10, 20, 30, 40, 50, 60, 70, 80])}
+              disabled={isAnimating}
+              size="sm"
+              variant="outline"
+            >
+              Large Array
+            </Button>
+            <Button
+              onClick={() => onLoadExample([1])}
+              disabled={isAnimating}
+              size="sm"
+              variant="outline"
+            >
+              Single Item
+            </Button>
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-2">
+            <Label>Manual Entry (comma-separated)</Label>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="1,2,3,4,5"
+                value={manualInput}
+                onChange={(e) => setManualInput(e.target.value)}
+                disabled={isAnimating}
+              />
+              <Button
+                onClick={handleManualLoad}
+                disabled={isAnimating || !manualInput.trim()}
+                size="sm"
+              >
+                Load
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Quick Operations */}
       <Card>
         <CardHeader>

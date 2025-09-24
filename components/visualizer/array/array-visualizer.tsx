@@ -89,6 +89,7 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
                 onBinarySearch={binarySearch}
                 onBubbleSort={bubbleSort}
                 onSelectionSort={selectionSort}
+                onLoadExample={setArray}
                 isAnimating={isAnimating}
                 isFull={isFull}
                 isEmpty={isEmpty}
@@ -138,31 +139,85 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
               onExecute={(code, result) => {
                 // Update the visualizer with playground results
                 if (result && Array.isArray(result.arr)) {
-                  // Assuming setArray is available to update the visualizer's state
                   setArray(result.arr)
                 }
               }}
-              context={{ array: elements, setArray: setArray }} // Pass array elements and setter
+              context={{ array: elements.map(el => el.value), setArray: setArray }}
             />
             <div className="space-y-4">
               <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold mb-2">Try These Examples:</h3>
-                <ul className="text-sm space-y-1 list-disc pl-4">
-                  <li>Implement sorting algorithms (bubble, selection, quick)</li>
-                  <li>Practice search algorithms (linear, binary)</li>
-                  <li>Use array methods (map, filter, reduce)</li>
-                  <li>Solve common array problems (two sum, rotate)</li>
-                </ul>
+                <h3 className="font-semibold mb-2">🔥 Interview Problems to Try:</h3>
+                <div className="text-sm space-y-2">
+                  <div className="p-2 bg-muted rounded">
+                    <div className="font-medium">Two Sum</div>
+                    <code className="text-xs">
+                      {`// Find indices of two numbers that add up to target
+const twoSum = (arr, target) => {
+  const map = new Map();
+  for (let i = 0; i < arr.length; i++) {
+    const complement = target - arr[i];
+    if (map.has(complement)) {
+      return [map.get(complement), i];
+    }
+    map.set(arr[i], i);
+  }
+  return [];
+};
+console.log(twoSum(arr, 9));`}
+                    </code>
+                  </div>
+
+                  <div className="p-2 bg-muted rounded">
+                    <div className="font-medium">Maximum Subarray (Kadane's)</div>
+                    <code className="text-xs">
+                      {`// Find maximum sum of contiguous subarray
+const maxSubArray = (arr) => {
+  let maxSoFar = arr[0];
+  let maxEndingHere = arr[0];
+  
+  for (let i = 1; i < arr.length; i++) {
+    maxEndingHere = Math.max(arr[i], maxEndingHere + arr[i]);
+    maxSoFar = Math.max(maxSoFar, maxEndingHere);
+  }
+  return maxSoFar;
+};
+console.log(maxSubArray(arr));`}
+                    </code>
+                  </div>
+
+                  <div className="p-2 bg-muted rounded">
+                    <div className="font-medium">Rotate Array</div>
+                    <code className="text-xs">
+                      {`// Rotate array to the right by k steps
+const rotate = (arr, k) => {
+  k = k % arr.length;
+  return [...arr.slice(-k), ...arr.slice(0, -k)];
+};
+console.log(rotate(arr, 2));`}
+                    </code>
+                  </div>
+                </div>
               </div>
 
               <div className="p-4 border rounded-lg">
-                <h3 className="font-semibold mb-2">Array Methods:</h3>
+                <h3 className="font-semibold mb-2">📚 Learning Tips:</h3>
                 <div className="text-sm space-y-1">
-                  <div><code className="bg-muted px-1 rounded">arr.push()</code> - Add to end</div>
-                  <div><code className="bg-muted px-1 rounded">arr.pop()</code> - Remove from end</div>
-                  <div><code className="bg-muted px-1 rounded">arr.map()</code> - Transform elements</div>
-                  <div><code className="bg-muted px-1 rounded">arr.filter()</code> - Filter elements</div>
-                  <div><code className="bg-muted px-1 rounded">arr.reduce()</code> - Reduce to single value</div>
+                  <div>• Use console.log() to see step-by-step execution</div>
+                  <div>• Try different array sizes and patterns</div>
+                  <div>• Compare time complexities practically</div>
+                  <div>• Use the playback controls to analyze algorithms</div>
+                  <div>• Load examples to test edge cases</div>
+                </div>
+              </div>
+
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold mb-2">🚀 Quick Examples:</h3>
+                <div className="text-sm space-y-1">
+                  <div><code className="bg-muted px-1 rounded">arr.sort((a,b) => a-b)</code> - Sort ascending</div>
+                  <div><code className="bg-muted px-1 rounded">arr.reverse()</code> - Reverse array</div>
+                  <div><code className="bg-muted px-1 rounded">arr.includes(val)</code> - Check if contains value</div>
+                  <div><code className="bg-muted px-1 rounded">arr.findIndex(x => x > 5)</code> - Find first index</div>
+                  <div><code className="bg-muted px-1 rounded">[...new Set(arr)]</code> - Remove duplicates</div>
                 </div>
               </div>
             </div>

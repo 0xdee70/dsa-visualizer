@@ -299,7 +299,7 @@ export function ArrayControls({
           
           <Separator />
           
-          <div className="space-y-2"></div>
+          <div className="space-y-2">
             <Label>Update Index</Label>
             <Input
               type="number"

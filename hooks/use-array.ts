@@ -524,14 +524,6 @@ export function useArray(initialCapacity: number = 8) {
     }
   }, [capacity, addOperation])
 
-  const loadExample = useCallback((exampleArray: number[]) => {
-    // Adjust capacity if needed
-    if (exampleArray.length > capacity) {
-      setCapacity(Math.max(exampleArray.length, 10))
-    }
-    setArray(exampleArray)
-  }, [capacity, setArray])
-
   // Playback control functions
   const playNext = useCallback(() => {
     if (currentStep < animationSteps.length - 1) {

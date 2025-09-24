@@ -6,6 +6,7 @@ import { StringDisplay } from "./string-display"
 import { StringControls } from "./string-controls"
 import { StringOperations } from "./string-operations"
 import { TextAnalysis } from "./text-analysis"
+import { CodePlayground } from "../shared/code-playground"
 import { useString } from "@/hooks/use-string"
 
 interface StringVisualizerProps {
@@ -46,9 +47,10 @@ export function StringVisualizer({ content }: StringVisualizerProps) {
       </div>
       
       <Tabs defaultValue="visualization" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="visualization">Visualization</TabsTrigger>
           <TabsTrigger value="analysis">Analysis</TabsTrigger>
+          <TabsTrigger value="playground">Playground</TabsTrigger>
           <TabsTrigger value="theory">Theory</TabsTrigger>
         </TabsList>
         
@@ -98,6 +100,42 @@ export function StringVisualizer({ content }: StringVisualizerProps) {
             countOccurrences={countOccurrences}
             findAllOccurrences={findAllOccurrences}
           />
+        </TabsContent>
+        
+        <TabsContent value="playground">
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <CodePlayground 
+              dataStructure="string"
+              onExecute={(code, result) => {
+                // Optionally update the visualizer with playground results
+                if (result && typeof result.original === 'string') {
+                  setText(result.original)
+                }
+              }}
+              context={{ text, setText }}
+            />
+            <div className="space-y-4">
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold mb-2">Try These Examples:</h3>
+                <ul className="text-sm space-y-1 list-disc pl-4">
+                  <li>Create string algorithms (reverse, palindrome check)</li>
+                  <li>Implement pattern searching (naive, KMP)</li>
+                  <li>Build text analysis tools (word count, frequency)</li>
+                  <li>Practice string manipulations (split, join, replace)</li>
+                </ul>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold mb-2">Available APIs:</h3>
+                <div className="text-sm space-y-1">
+                  <div><code className="bg-muted px-1 rounded">string.split()</code> - Split into array</div>
+                  <div><code className="bg-muted px-1 rounded">string.indexOf()</code> - Find substring</div>
+                  <div><code className="bg-muted px-1 rounded">string.replace()</code> - Replace text</div>
+                  <div><code className="bg-muted px-1 rounded">string.includes()</code> - Check if contains</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="theory">

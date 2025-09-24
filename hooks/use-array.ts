@@ -1,13 +1,12 @@
 import { useState, useCallback } from "react"
 import { ArrayElement, ArrayOperation } from "@/components/visualizer/array/types"
-// Corrected import path for CodePlayground
-import { CodePlayground } from "@/components/visualizer/shared/code-playground"
 
 let elementIdCounter = 0
 
 export function useArray(initialCapacity: number = 8) {
   const [elements, setElements] = useState<ArrayElement[]>([])
   const [capacity, setCapacity] = useState(initialCapacity)
+  const [size, setSize] = useState(0)
   const [operations, setOperations] = useState<ArrayOperation[]>([])
   const [isAnimating, setIsAnimating] = useState(false)
   const [highlightedIndex, setHighlightedIndex] = useState<number | null>(null)
@@ -23,7 +22,7 @@ export function useArray(initialCapacity: number = 8) {
   }, [])
 
   const insert = useCallback(async (index: number, value: number) => {
-    if (index < 0 || index > elements.length || isAnimating || elements.length >= capacity) return
+    if (index < 0 || index > size || isAnimating || size >= capacity) return
 
     setIsAnimating(true)
     addOperation({ type: 'insert', value, index })
@@ -52,13 +51,15 @@ export function useArray(initialCapacity: number = 8) {
       return newElements.map((el, i) => ({ ...el, index: i }))
     })
 
+    setSize(prev => prev + 1)
+
     await new Promise(resolve => setTimeout(resolve, 500))
     setHighlightedIndex(null)
     setIsAnimating(false)
-  }, [elements.length, capacity, isAnimating, addOperation])
+  }, [size, capacity, isAnimating, addOperation])
 
   const deleteAt = useCallback(async (index: number) => {
-    if (index < 0 || index >= elements.length || isAnimating) return
+    if (index < 0 || index >= size || isAnimating) return
 
     setIsAnimating(true)
     const deletedValue = elements[index].value
@@ -75,13 +76,15 @@ export function useArray(initialCapacity: number = 8) {
       return newElements.map((el, i) => ({ ...el, index: i }))
     })
 
+    setSize(prev => prev - 1)
+
     await new Promise(resolve => setTimeout(resolve, 500))
     setHighlightedIndex(null)
     setIsAnimating(false)
-  }, [elements, isAnimating, addOperation])
+  }, [elements, size, isAnimating, addOperation])
 
   const access = useCallback(async (index: number) => {
-    if (index < 0 || index >= elements.length || isAnimating) return elements[index]?.value
+    if (index < 0 || index >= size || isAnimating) return elements[index]?.value
 
     setIsAnimating(true)
     addOperation({ type: 'access', index })
@@ -94,10 +97,47 @@ export function useArray(initialCapacity: number = 8) {
     setAccessedIndex(null)
     setIsAnimating(false)
     return elements[index].value
-  }, [elements, isAnimating, addOperation])
+  }, [elements, size, isAnimating, addOperation])
+
+  // Add access by value function
+  const accessByValue = useCallback(async (searchValue: number) => {
+    if (size === 0 || isAnimating) return { found: false, index: -1, comparisons: 0 }
+
+    setIsAnimating(true)
+    addOperation({ type: 'search', searchValue, algorithm: 'Access by Value' })
+
+    let comparisons = 0
+    let found = false
+    let foundIndex = -1
+
+    for (let i = 0; i < size; i++) {
+      setSearchingIndex(i)
+      comparisons++
+
+      await new Promise(resolve => setTimeout(resolve, 600))
+
+      if (elements[i].value === searchValue) {
+        found = true
+        foundIndex = i
+        setAccessedIndex(i)
+        break
+      }
+    }
+
+    setSearchResult({ found, index: foundIndex, comparisons })
+
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    setSearchingIndex(null)
+    setAccessedIndex(null)
+    setIsAnimating(false)
+
+    setTimeout(() => setSearchResult(null), 3000)
+    return { found, index: foundIndex, comparisons }
+  }, [elements, size, isAnimating, addOperation])
 
   const update = useCallback(async (index: number, newValue: number) => {
-    if (index < 0 || index >= elements.length || isAnimating) return
+    if (index < 0 || index >= size || isAnimating) return
 
     setIsAnimating(true)
     const oldValue = elements[index].value
@@ -117,10 +157,10 @@ export function useArray(initialCapacity: number = 8) {
     await new Promise(resolve => setTimeout(resolve, 500))
     setHighlightedIndex(null)
     setIsAnimating(false)
-  }, [elements, isAnimating, addOperation])
+  }, [elements, size, isAnimating, addOperation])
 
   const resize = useCallback(async (newCapacity: number) => {
-    if (newCapacity < elements.length || isAnimating || newCapacity < 1) return
+    if (newCapacity < size || isAnimating || newCapacity < 1) return
 
     setIsAnimating(true)
     addOperation({ type: 'resize', newSize: newCapacity })
@@ -131,10 +171,11 @@ export function useArray(initialCapacity: number = 8) {
 
     await new Promise(resolve => setTimeout(resolve, 500))
     setIsAnimating(false)
-  }, [elements.length, isAnimating, addOperation])
+  }, [size, isAnimating, addOperation])
 
   const clear = useCallback(() => {
     setElements([])
+    setSize(0)
     setOperations([])
     setHighlightedIndex(null)
     setAccessedIndex(null)
@@ -147,9 +188,19 @@ export function useArray(initialCapacity: number = 8) {
     elementIdCounter = 0
   }, [initialCapacity])
 
+  // Check if array is sorted
+  const isSorted = useCallback(() => {
+    for (let i = 1; i < size; i++) {
+      if (elements[i - 1].value > elements[i].value) {
+        return false
+      }
+    }
+    return true
+  }, [elements, size])
+
   // Linear Search Implementation
   const linearSearch = useCallback(async (searchValue: number) => {
-    if (elements.length === 0 || isAnimating) return
+    if (size === 0 || isAnimating) return
 
     setIsAnimating(true)
     addOperation({ type: 'search', searchValue, algorithm: 'Linear Search' })
@@ -158,7 +209,7 @@ export function useArray(initialCapacity: number = 8) {
     let found = false
     let foundIndex = -1
 
-    for (let i = 0; i < elements.length; i++) {
+    for (let i = 0; i < size; i++) {
       setSearchingIndex(i)
       comparisons++
 
@@ -188,17 +239,23 @@ export function useArray(initialCapacity: number = 8) {
     setIsAnimating(false)
 
     setTimeout(() => setSearchResult(null), 3000)
-  }, [elements, isAnimating, addOperation])
+  }, [elements, size, isAnimating, addOperation])
 
   // Binary Search Implementation (requires sorted array)
   const binarySearch = useCallback(async (searchValue: number) => {
-    if (elements.length === 0 || isAnimating) return
+    if (size === 0 || isAnimating) return
+
+    // Check if array is sorted
+    if (!isSorted()) {
+      alert('Binary Search requires a sorted array. Please sort the array first.')
+      return
+    }
 
     setIsAnimating(true)
     addOperation({ type: 'search', searchValue, algorithm: 'Binary Search' })
 
     let left = 0
-    let right = elements.length - 1
+    let right = size - 1
     let comparisons = 0
     let found = false
     let foundIndex = -1
@@ -238,17 +295,17 @@ export function useArray(initialCapacity: number = 8) {
     setIsAnimating(false)
 
     setTimeout(() => setSearchResult(null), 3000)
-  }, [elements, isAnimating, addOperation])
+  }, [elements, size, isAnimating, addOperation, isSorted])
 
   // Bubble Sort Implementation
   const bubbleSort = useCallback(async () => {
-    if (elements.length <= 1 || isAnimating) return
+    if (size <= 1 || isAnimating) return
 
     setIsAnimating(true)
     addOperation({ type: 'sort', algorithm: 'Bubble Sort' })
 
     const arr = [...elements]
-    const n = arr.length
+    const n = size
 
     for (let i = 0; i < n - 1; i++) {
       for (let j = 0; j < n - i - 1; j++) {
@@ -283,13 +340,13 @@ export function useArray(initialCapacity: number = 8) {
 
   // Selection Sort Implementation
   const selectionSort = useCallback(async () => {
-    if (elements.length <= 1 || isAnimating) return
+    if (size <= 1 || isAnimating) return
 
     setIsAnimating(true)
     addOperation({ type: 'sort', algorithm: 'Selection Sort' })
 
     const arr = [...elements]
-    const n = arr.length
+    const n = size
 
     for (let i = 0; i < n - 1; i++) {
       let minIdx = i
@@ -329,52 +386,33 @@ export function useArray(initialCapacity: number = 8) {
   }, [elements, isAnimating, addOperation])
 
   const pushBack = useCallback(async (value: number) => {
-    await insert(elements.length, value)
-  }, [insert, elements.length])
+    await insert(size, value)
+  }, [insert, size])
 
   const popBack = useCallback(async () => {
-    if (elements.length > 0) {
-      await deleteAt(elements.length - 1)
+    if (size > 0) {
+      await deleteAt(size - 1)
     }
-  }, [deleteAt, elements.length])
+  }, [deleteAt, size])
 
-  // Added setArray function as per the requirement
   const setArray = useCallback((newArray: number[]) => {
     if (newArray.length <= capacity) {
-      // Ensure the new elements array respects the capacity, padding with nulls if necessary
-      const paddedArray = [
-        ...newArray.map((value, index) => ({
-          id: `element-${elementIdCounter++}`,
-          value,
-          index,
-        })),
-        ...Array(capacity - newArray.length).fill(null).map((_, index) => ({
-            id: `empty-${index}`, // Placeholder for empty slots
-            value: null,
-            index: newArray.length + index
-        }))
-      ];
-      setElements(paddedArray);
-      // Assuming there's a size state, otherwise this would need to be managed differently
-      // For now, we'll assume size is implicitly elements.length
-      // If a separate size state exists, it should be updated here.
-      // addOperation('setArray', `Set array to [${newArray.join(', ')}]`); // Corrected addOperation call
+      const newElements = newArray.map((value, index) => ({
+        id: `element-${elementIdCounter++}`,
+        value,
+        index,
+      }))
+      setElements(newElements)
+      setSize(newArray.length)
+      addOperation({ type: 'clear', value: undefined, index: undefined })
     }
-  }, [capacity, /* addOperation */]); // addOperation is not directly available here, needs to be passed or managed globally if required by setArray
-
-  // Re-adding the size state and its setter for setArray to work correctly
-  const [size, setSize] = useState(0); // Assuming size state is needed
-
-  // Re-defining addOperation to be used by setArray, or ensuring it's available
-  const addOperationForSetArray = useCallback((type: ArrayOperation['type'], description: string) => {
-      setOperations(prev => [...prev, { type, description, timestamp: Date.now() }]);
-  }, []);
+  }, [capacity, addOperation])
 
 
   return {
     elements,
     capacity,
-    size, // Returning size state
+    size,
     operations,
     isAnimating,
     highlightedIndex,
@@ -386,6 +424,7 @@ export function useArray(initialCapacity: number = 8) {
     insert,
     deleteAt,
     access,
+    accessByValue,
     update,
     resize,
     clear,
@@ -395,8 +434,9 @@ export function useArray(initialCapacity: number = 8) {
     binarySearch,
     bubbleSort,
     selectionSort,
-    isFull: elements.length >= capacity,
-    isEmpty: elements.length === 0,
-    setArray, // Exposing the new setArray function
+    isFull: size >= capacity,
+    isEmpty: size === 0,
+    setArray,
+    isSorted,
   }
 }

@@ -246,6 +246,7 @@ export function CodePlayground({
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [isRunning, setIsRunning] = useState(false)
+  const [activeTab, setActiveTab] = useState("editor")
 
   const executeCode = useCallback(async () => {
     if (!code.trim() || isRunning) return
@@ -283,6 +284,9 @@ export function CodePlayground({
       setOutput(logs)
       setResult(executionResult)
       
+      // Auto-switch to output panel
+      setActiveTab("output")
+      
       if (onExecute) {
         onExecute(code, executionResult)
       }
@@ -290,6 +294,8 @@ export function CodePlayground({
     } catch (err) {
       console.log = console.log // Restore console.log
       setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      // Auto-switch to output panel even on error
+      setActiveTab("output")
     } finally {
       setIsRunning(false)
     }
@@ -314,7 +320,7 @@ export function CodePlayground({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="editor" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="editor">Code Editor</TabsTrigger>
             <TabsTrigger value="output">Output</TabsTrigger>

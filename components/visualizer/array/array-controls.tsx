@@ -12,6 +12,7 @@ interface ArrayControlsProps {
   onInsert: (index: number, value: number) => void
   onDelete: (index: number) => void
   onAccess: (index: number) => Promise<number | undefined>
+  onAccessByValue: (value: number) => Promise<{ found: boolean; index: number; comparisons: number }>
   onUpdate: (index: number, value: number) => void
   onResize: (newCapacity: number) => void
   onClear: () => void
@@ -26,12 +27,14 @@ interface ArrayControlsProps {
   isEmpty: boolean
   capacity: number
   size: number
+  isSorted: boolean
 }
 
 export function ArrayControls({
   onInsert,
   onDelete,
   onAccess,
+  onAccessByValue,
   onUpdate,
   onResize,
   onClear,
@@ -46,6 +49,7 @@ export function ArrayControls({
   isEmpty,
   capacity,
   size,
+  isSorted,
 }: ArrayControlsProps) {
   const [insertValue, setInsertValue] = useState("")
   const [insertIndex, setInsertIndex] = useState("")
@@ -55,6 +59,8 @@ export function ArrayControls({
   const [newCapacity, setNewCapacity] = useState("")
   const [pushValue, setPushValue] = useState("")
   const [accessResult, setAccessResult] = useState<number | null>(null)
+  const [accessByValueResult, setAccessByValueResult] = useState<{ found: boolean; index: number; comparisons: number } | null>(null)
+  const [accessByValueInput, setAccessByValueInput] = useState("")
   const [searchValue, setSearchValue] = useState("")
 
   const handleInsert = () => {
@@ -81,6 +87,15 @@ export function ArrayControls({
       const result = await onAccess(index)
       setAccessResult(result ?? null)
       setTimeout(() => setAccessResult(null), 3000)
+    }
+  }
+
+  const handleAccessByValue = async () => {
+    const value = parseInt(accessByValueInput)
+    if (!isNaN(value)) {
+      const result = await onAccessByValue(value)
+      setAccessByValueResult(result)
+      setTimeout(() => setAccessByValueResult(null), 4000)
     }
   }
 
@@ -250,6 +265,41 @@ export function ArrayControls({
           <Separator />
           
           <div className="space-y-2">
+            <Label>Access by Value</Label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                placeholder="Search value"
+                value={accessByValueInput}
+                onChange={(e) => setAccessByValueInput(e.target.value)}
+                disabled={isAnimating}
+              />
+              <Button
+                onClick={handleAccessByValue}
+                disabled={isAnimating || isEmpty || !accessByValueInput}
+                size="sm"
+              >
+                <Search className="h-4 w-4" />
+              </Button>
+            </div>
+            {accessByValueResult && (
+              <div className="text-sm">
+                {accessByValueResult.found ? (
+                  <span className="text-green-500 font-medium">
+                    Found at index {accessByValueResult.index} ({accessByValueResult.comparisons} comparisons)
+                  </span>
+                ) : (
+                  <span className="text-red-500 font-medium">
+                    Not found ({accessByValueResult.comparisons} comparisons)
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+          
+          <Separator />
+          
+          <div className="space-y-2"></div>
             <Label>Update Index</Label>
             <Input
               type="number"
@@ -308,18 +358,19 @@ export function ArrayControls({
             </Button>
             <Button
               onClick={handleBinarySearch}
-              disabled={isAnimating || isEmpty || !searchValue}
+              disabled={isAnimating || isEmpty || !searchValue || !isSorted}
               size="sm"
               variant="outline"
+              title={!isSorted ? "Array must be sorted for binary search" : ""}
             >
               <Zap className="h-4 w-4 mr-2" />
-              Binary
+              Binary {!isSorted && "⚠️"}
             </Button>
           </div>
           
           <div className="text-xs text-muted-foreground">
             <div>• Linear: O(n) - Works on any array</div>
-            <div>• Binary: O(log n) - Requires sorted array</div>
+            <div>• Binary: O(log n) - Requires sorted array {!isSorted && "(⚠️ Sort first)"}</div>
           </div>
         </CardContent>
       </Card>

@@ -192,8 +192,16 @@ export function useArray(initialCapacity: number = 8) {
     setSearchResult(null)
     setIsAnimating(false)
     setCapacity(initialCapacity)
+    // Reset playback controls
+    setAnimationSteps([])
+    setCurrentStep(0)
+    setIsAutoPlaying(false)
+    if (autoPlayInterval) {
+      clearInterval(autoPlayInterval)
+      setAutoPlayInterval(null)
+    }
     elementIdCounter = 0
-  }, [initialCapacity])
+  }, [initialCapacity, autoPlayInterval])
 
   // Check if array is sorted
   const isSorted = useCallback(() => {
@@ -313,12 +321,27 @@ export function useArray(initialCapacity: number = 8) {
 
     const arr = [...elements]
     const n = size
+    const steps: any[] = []
+
+    // Record initial state
+    steps.push({
+      type: 'start',
+      elements: [...arr],
+      comparingIndices: [],
+      sortingIndices: [],
+      message: 'Starting Bubble Sort'
+    })
 
     for (let i = 0; i < n - 1; i++) {
       for (let j = 0; j < n - i - 1; j++) {
-        // Highlight comparison
-        setComparingIndices([j, j + 1])
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Record comparison step
+        steps.push({
+          type: 'compare',
+          elements: [...arr],
+          comparingIndices: [j, j + 1],
+          sortingIndices: Array.from({ length: i }, (_, k) => n - 1 - k),
+          message: `Comparing elements at indices ${j} and ${j + 1}: ${arr[j].value} vs ${arr[j + 1].value}`
+        })
 
         if (arr[j].value > arr[j + 1].value) {
           // Swap elements
@@ -327,18 +350,42 @@ export function useArray(initialCapacity: number = 8) {
           arr[j].index = j
           arr[j + 1].index = j + 1
 
-          setElements([...arr])
-          addOperation({ type: 'swap', swapIndices: [j, j + 1] })
+          // Record swap step
+          steps.push({
+            type: 'swap',
+            elements: [...arr],
+            comparingIndices: [j, j + 1],
+            sortingIndices: Array.from({ length: i }, (_, k) => n - 1 - k),
+            message: `Swapped elements: ${arr[j + 1].value} and ${arr[j].value}`
+          })
 
-          await new Promise(resolve => setTimeout(resolve, 500))
+          addOperation({ type: 'swap', swapIndices: [j, j + 1] })
         }
       }
-      // Mark element as sorted
-      setSortingIndices(prev => [...prev, n - 1 - i])
+      
+      // Record element as sorted
+      steps.push({
+        type: 'sorted',
+        elements: [...arr],
+        comparingIndices: [],
+        sortingIndices: Array.from({ length: i + 1 }, (_, k) => n - 1 - k),
+        message: `Element at index ${n - 1 - i} is now in correct position`
+      })
     }
 
-    setSortingIndices(prev => [...prev, 0]) // Mark first element as sorted
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Record final state
+    steps.push({
+      type: 'complete',
+      elements: [...arr],
+      comparingIndices: [],
+      sortingIndices: Array.from({ length: n }, (_, k) => k),
+      message: 'Bubble Sort completed!'
+    })
+
+    // Set the animation steps for playback
+    setAnimationSteps(steps)
+    setCurrentStep(0)
+    setElements([...arr])
 
     setComparingIndices([])
     setSortingIndices([])
@@ -354,17 +401,52 @@ export function useArray(initialCapacity: number = 8) {
 
     const arr = [...elements]
     const n = size
+    const steps: any[] = []
+
+    // Record initial state
+    steps.push({
+      type: 'start',
+      elements: [...arr],
+      highlightedIndex: null,
+      comparingIndices: [],
+      sortingIndices: [],
+      message: 'Starting Selection Sort'
+    })
 
     for (let i = 0; i < n - 1; i++) {
       let minIdx = i
-      setHighlightedIndex(i)
+      
+      // Record highlighting current position
+      steps.push({
+        type: 'highlight',
+        elements: [...arr],
+        highlightedIndex: i,
+        comparingIndices: [],
+        sortingIndices: Array.from({ length: i }, (_, k) => k),
+        message: `Finding minimum element starting from index ${i}`
+      })
 
       for (let j = i + 1; j < n; j++) {
-        setComparingIndices([minIdx, j])
-        await new Promise(resolve => setTimeout(resolve, 400))
+        // Record comparison
+        steps.push({
+          type: 'compare',
+          elements: [...arr],
+          highlightedIndex: i,
+          comparingIndices: [minIdx, j],
+          sortingIndices: Array.from({ length: i }, (_, k) => k),
+          message: `Comparing ${arr[minIdx].value} at index ${minIdx} with ${arr[j].value} at index ${j}`
+        })
 
         if (arr[j].value < arr[minIdx].value) {
           minIdx = j
+          steps.push({
+            type: 'update_min',
+            elements: [...arr],
+            highlightedIndex: i,
+            comparingIndices: [minIdx, j],
+            sortingIndices: Array.from({ length: i }, (_, k) => k),
+            message: `New minimum found: ${arr[j].value} at index ${j}`
+          })
         }
       }
 
@@ -374,17 +456,44 @@ export function useArray(initialCapacity: number = 8) {
         arr[i].index = i
         arr[minIdx].index = minIdx
 
-        setElements([...arr])
-        addOperation({ type: 'swap', swapIndices: [i, minIdx] })
+        // Record swap
+        steps.push({
+          type: 'swap',
+          elements: [...arr],
+          highlightedIndex: null,
+          comparingIndices: [],
+          sortingIndices: Array.from({ length: i }, (_, k) => k),
+          message: `Swapped ${arr[i].value} and ${arr[minIdx].value}`
+        })
 
-        await new Promise(resolve => setTimeout(resolve, 500))
+        addOperation({ type: 'swap', swapIndices: [i, minIdx] })
       }
 
-      setSortingIndices(prev => [...prev, i])
+      // Record element as sorted
+      steps.push({
+        type: 'sorted',
+        elements: [...arr],
+        highlightedIndex: null,
+        comparingIndices: [],
+        sortingIndices: Array.from({ length: i + 1 }, (_, k) => k),
+        message: `Element at index ${i} is now in correct position`
+      })
     }
 
-    setSortingIndices(prev => [...prev, n - 1])
-    await new Promise(resolve => setTimeout(resolve, 500))
+    // Record final state
+    steps.push({
+      type: 'complete',
+      elements: [...arr],
+      highlightedIndex: null,
+      comparingIndices: [],
+      sortingIndices: Array.from({ length: n }, (_, k) => k),
+      message: 'Selection Sort completed!'
+    })
+
+    // Set the animation steps for playback
+    setAnimationSteps(steps)
+    setCurrentStep(0)
+    setElements([...arr])
 
     setHighlightedIndex(null)
     setComparingIndices([])
@@ -453,6 +562,27 @@ export function useArray(initialCapacity: number = 8) {
       setAutoPlayInterval(null)
     }
   }, [autoPlayInterval])
+
+  // Effect to apply animation steps when current step changes
+  React.useEffect(() => {
+    if (animationSteps.length > 0 && currentStep < animationSteps.length) {
+      const step = animationSteps[currentStep]
+      
+      // Apply the step's state to the visualizer
+      if (step.elements) {
+        setElements([...step.elements])
+      }
+      if (step.highlightedIndex !== undefined) {
+        setHighlightedIndex(step.highlightedIndex)
+      }
+      if (step.comparingIndices) {
+        setComparingIndices([...step.comparingIndices])
+      }
+      if (step.sortingIndices) {
+        setSortingIndices([...step.sortingIndices])
+      }
+    }
+  }, [currentStep, animationSteps])
 
   // Auto-play effect
   React.useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react"
+import React, { useState, useCallback } from "react"
 import { ArrayElement, ArrayOperation } from "@/components/visualizer/array/types"
 
 let elementIdCounter = 0
@@ -15,6 +15,13 @@ export function useArray(initialCapacity: number = 8) {
   const [sortingIndices, setSortingIndices] = useState<number[]>([])
   const [comparingIndices, setComparingIndices] = useState<number[]>([])
   const [searchResult, setSearchResult] = useState<{ found: boolean; index: number; comparisons: number } | null>(null)
+  
+  // Playback controls
+  const [isAutoPlaying, setIsAutoPlaying] = useState(false)
+  const [playbackSpeed, setPlaybackSpeed] = useState(1)
+  const [currentStep, setCurrentStep] = useState(0)
+  const [animationSteps, setAnimationSteps] = useState<any[]>([])
+  const [autoPlayInterval, setAutoPlayInterval] = useState<NodeJS.Timeout | null>(null)
 
   // Helper function to add operations, ensuring it's properly defined
   const addOperation = useCallback((operation: Omit<ArrayOperation, 'timestamp'>) => {
@@ -408,6 +415,73 @@ export function useArray(initialCapacity: number = 8) {
     }
   }, [capacity, addOperation])
 
+  // Playback control functions
+  const playNext = useCallback(() => {
+    if (currentStep < animationSteps.length - 1) {
+      setCurrentStep(prev => prev + 1)
+    }
+  }, [currentStep, animationSteps.length])
+
+  const playPrevious = useCallback(() => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1)
+    }
+  }, [currentStep])
+
+  const toggleAutoPlay = useCallback(() => {
+    setIsAutoPlaying(prev => !prev)
+  }, [])
+
+  const stopAutoPlay = useCallback(() => {
+    setIsAutoPlaying(false)
+    if (autoPlayInterval) {
+      clearInterval(autoPlayInterval)
+      setAutoPlayInterval(null)
+    }
+  }, [autoPlayInterval])
+
+  const setSpeed = useCallback((speed: number) => {
+    setPlaybackSpeed(speed)
+  }, [])
+
+  const resetPlayback = useCallback(() => {
+    setCurrentStep(0)
+    setIsAutoPlaying(false)
+    setAnimationSteps([])
+    if (autoPlayInterval) {
+      clearInterval(autoPlayInterval)
+      setAutoPlayInterval(null)
+    }
+  }, [autoPlayInterval])
+
+  // Auto-play effect
+  React.useEffect(() => {
+    if (isAutoPlaying && currentStep < animationSteps.length - 1) {
+      const speed = 1000 / playbackSpeed // Convert speed to milliseconds
+      const interval = setInterval(() => {
+        setCurrentStep(prev => {
+          if (prev >= animationSteps.length - 1) {
+            setIsAutoPlaying(false)
+            return prev
+          }
+          return prev + 1
+        })
+      }, speed)
+      setAutoPlayInterval(interval)
+    } else {
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval)
+        setAutoPlayInterval(null)
+      }
+    }
+
+    return () => {
+      if (autoPlayInterval) {
+        clearInterval(autoPlayInterval)
+      }
+    }
+  }, [isAutoPlaying, playbackSpeed, currentStep, animationSteps.length])
+
 
   return {
     elements,
@@ -438,5 +512,16 @@ export function useArray(initialCapacity: number = 8) {
     isEmpty: size === 0,
     setArray,
     isSorted,
+    // Playback controls
+    isAutoPlaying,
+    playbackSpeed,
+    currentStep,
+    totalSteps: animationSteps.length,
+    playNext,
+    playPrevious,
+    toggleAutoPlay,
+    stopAutoPlay,
+    setSpeed,
+    resetPlayback,
   }
 }

@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-import { Plus, Minus, Search, Edit, RotateCcw, Trash2, ArrowUpDown, Zap } from "lucide-react"
+import { Plus, Minus, Search, Edit, RotateCcw, Trash2, ArrowUpDown, Zap, Play, Pause, SkipForward, SkipBack, Gauge } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface ArrayControlsProps {
   onInsert: (index: number, value: number) => void
@@ -28,6 +29,16 @@ interface ArrayControlsProps {
   capacity: number
   size: number
   isSorted: boolean
+  // Playback controls
+  isAutoPlaying?: boolean
+  playbackSpeed?: number
+  currentStep?: number
+  totalSteps?: number
+  onPlayNext?: () => void
+  onPlayPrevious?: () => void
+  onToggleAutoPlay?: () => void
+  onSetSpeed?: (speed: number) => void
+  onResetPlayback?: () => void
 }
 
 export function ArrayControls({
@@ -50,6 +61,16 @@ export function ArrayControls({
   capacity,
   size,
   isSorted,
+  // Playback controls
+  isAutoPlaying = false,
+  playbackSpeed = 1,
+  currentStep = 0,
+  totalSteps = 0,
+  onPlayNext,
+  onPlayPrevious,
+  onToggleAutoPlay,
+  onSetSpeed,
+  onResetPlayback,
 }: ArrayControlsProps) {
   const [insertValue, setInsertValue] = useState("")
   const [insertIndex, setInsertIndex] = useState("")
@@ -457,6 +478,87 @@ export function ArrayControls({
           </Button>
         </CardContent>
       </Card>
+
+      {/* Playback Controls */}
+      {totalSteps > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Playback Controls</CardTitle>
+            <CardDescription>Control animation playback and speed</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">
+                Step {currentStep + 1} of {totalSteps}
+              </div>
+              <div className="flex items-center gap-1">
+                <Label htmlFor="speed" className="text-xs">Speed:</Label>
+                <Select value={playbackSpeed.toString()} onValueChange={(value) => onSetSpeed?.(parseFloat(value))}>
+                  <SelectTrigger className="w-20 h-8">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0.25">0.25x</SelectItem>
+                    <SelectItem value="0.5">0.5x</SelectItem>
+                    <SelectItem value="0.75">0.75x</SelectItem>
+                    <SelectItem value="1">1x</SelectItem>
+                    <SelectItem value="2">2x</SelectItem>
+                    <SelectItem value="4">4x</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              <Button
+                onClick={onPlayPrevious}
+                disabled={currentStep <= 0 || isAnimating}
+                size="sm"
+                variant="outline"
+              >
+                <SkipBack className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={onToggleAutoPlay}
+                disabled={isAnimating}
+                size="sm"
+                variant={isAutoPlaying ? "destructive" : "default"}
+              >
+                {isAutoPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+              </Button>
+              <Button
+                onClick={onPlayNext}
+                disabled={currentStep >= totalSteps - 1 || isAnimating}
+                size="sm"
+                variant="outline"
+              >
+                <SkipForward className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={onResetPlayback}
+                disabled={isAnimating}
+                size="sm"
+                variant="outline"
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="w-full bg-secondary rounded-full h-2">
+              <div 
+                className="bg-primary h-2 rounded-full transition-all duration-300" 
+                style={{ width: `${totalSteps > 0 ? ((currentStep + 1) / totalSteps) * 100 : 0}%` }}
+              />
+            </div>
+
+            <div className="text-xs text-muted-foreground">
+              <div>• Play/Pause: Control automatic playback</div>
+              <div>• Previous/Next: Step through manually</div>
+              <div>• Speed: Adjust playback speed (0.25x to 4x)</div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

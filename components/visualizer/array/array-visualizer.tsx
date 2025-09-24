@@ -29,6 +29,7 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
     insert,
     deleteAt,
     access,
+    accessByValue,
     update,
     resize,
     clear,
@@ -40,10 +41,18 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
     selectionSort,
     isFull,
     isEmpty,
-    // This is a placeholder for the setArray function which is needed for the playground
-    // In a real scenario, you would likely have a state setter for the array elements
-    // For now, we'll mock it or assume it's available through useArray hook or context
-    setArray // Assuming setArray is available or needs to be added to useArray
+    isSorted,
+    setArray,
+    // Playback controls
+    isAutoPlaying,
+    playbackSpeed,
+    currentStep,
+    totalSteps,
+    playNext,
+    playPrevious,
+    toggleAutoPlay,
+    setSpeed,
+    resetPlayback,
   } = useArray()
 
   return (
@@ -70,6 +79,7 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
                 onInsert={insert}
                 onDelete={deleteAt}
                 onAccess={access}
+                onAccessByValue={accessByValue}
                 onUpdate={update}
                 onResize={resize}
                 onClear={clear}
@@ -84,6 +94,17 @@ export function ArrayVisualizer({ content }: ArrayVisualizerProps) {
                 isEmpty={isEmpty}
                 capacity={capacity}
                 size={size}
+                isSorted={isSorted()}
+                // Playback controls
+                isAutoPlaying={isAutoPlaying}
+                playbackSpeed={playbackSpeed}
+                currentStep={currentStep}
+                totalSteps={totalSteps}
+                onPlayNext={playNext}
+                onPlayPrevious={playPrevious}
+                onToggleAutoPlay={toggleAutoPlay}
+                onSetSpeed={setSpeed}
+                onResetPlayback={resetPlayback}
               />
               <ArrayOperations operations={operations} />
             </div>
